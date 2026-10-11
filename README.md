@@ -36,12 +36,15 @@ paodo <group> ... --help    # arguments and fields of one command
 | Group | What it manages |
 |---|---|
 | `app` | The app itself: health and the LLM models it offers |
-| `workspace` | Workspaces: create, configure, delete |
-| `workspace key` | API and MCP keys of a workspace |
-| `workspace schedule` | A workspace's scheduled job |
-| `workspace conversation` | Conversations, their sessions and tool calls |
+| `workspace` | Workspaces: list, create, configure, delete |
+| `workspace key` | API and MCP keys of a workspace: generate, rotate, revoke |
+| `workspace schedule` | A workspace's scheduled job: read, configure, enable or disable |
+| `workspace conversation` | The conversations of a workspace |
+| `workspace conversation session` | The sessions of a conversation: message, final answer, cost |
+| `workspace conversation session call` | The tool calls of a session: input and output |
 | `workspace file` | Files inside a workspace: list, read, pull, push, delete |
-| `drive` | Shared drives and the files they hold |
+| `drive` | Shared drives: list, create, rename, delete |
+| `drive file` | Files inside a drive: list, read, pull, push, delete |
 | `connection` | Links between a drive and a workspace, or between two workspaces |
 
 The built-in help is the authoritative reference; this table is only a map.

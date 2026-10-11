@@ -24,9 +24,6 @@ npm link          # puts `paodo` on your PATH
 Copy `cli/.env.example` to `cli/.env`, then fill in `PAODO_ENDPOINT` (no trailing slash) and
 `PAODO_TOKEN`. Both values can be found in the settings of your PAODO app's UI.
 
-The file is read from `cli/` wherever you run `paodo` from. Exported variables of the same name
-take precedence over it.
-
 ## Usage
 
 ```bash

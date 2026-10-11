@@ -91,10 +91,9 @@ export function formatResult(value) {
 /**
  * A receipt: `ok` first, then what was acted on, then the payload.
  *
- * One envelope for every command that writes, and for the one read that composes its own answer rather
- * than relaying the app's (`file ls`). The rest are relays — `workspace get` is a workspace and
- * `workspace ls` is a list of them, and wrapping a resource to make it resemble a receipt would only
- * cost it the shape it has for a reason.
+ * One envelope for every command, reads included: a resource goes under its own key (`workspace`,
+ * `workspaces`, `entries`, ...) rather than being printed bare, since a bare list has nowhere to carry
+ * `ok`. The one exception is `file cat`, which prints the file's own bytes and nothing else.
  *
  * Mutations are the case that needed this, because their reply exists only to say what happened.
  * There were five of them in five shapes, three with no `ok` at all, so telling a success from a

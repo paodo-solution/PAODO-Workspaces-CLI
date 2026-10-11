@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import create from "../src/commands/connection/create.mjs";
+import ls from "../src/commands/connection/ls.mjs";
 import { issue } from "../src/commands/workspace/key/channel.mjs";
 import { channels, limit } from "../src/contract.mjs";
 
@@ -42,4 +43,39 @@ test("connection create sends the pair as given and prints the roles the app ans
   await create.run(["a", "b"]);
   assert.equal(calls.at(-1), "POST /api/connections");
   assert.match(printed.join("\n"), /connectionId : "call_1"[\s\S]*caller : "Sales"\ncallerId : "a"\ncallee : "Billing"\ncalleeId : "b"/);
+});
+
+test("connection ls relays the app's whole listing from one request, each end as a name and an id", async (t) => {
+  const calls = stub(t, {
+    driveLinks: [{ id: "link_1", drive: { id: "d", name: null }, workspace: { id: "a", name: "Sales" } }],
+    agentCalls: [],
+  });
+  const printed = [];
+  t.mock.method(console, "log", (text) => printed.push(text));
+  await ls.run([]);
+  assert.deepEqual(calls, ["GET /api/connections"]);
+  assert.match(printed.join("\n"), /id : "link_1"\ndrive : \(not found\)\ndriveId : "d"\nworkspace : "Sales"\nworkspaceId : "a"/);
+  assert.match(printed.join("\n"), /agentCalls : \(none\)/);
+});
+
+test("connection ls names the id it was given and puts the subject the app answered with on the envelope", async (t) => {
+  const calls = stub(t, {
+    workspace: { id: "a b", name: "Sales" },
+    drives: [],
+    callers: [],
+    callees: [{ id: "call_1", callee: { id: "b", name: "Billing" } }],
+  });
+  const printed = [];
+  t.mock.method(console, "log", (text) => printed.push(text));
+  await ls.run(["a b"]);
+  assert.deepEqual(calls, ["GET /api/connections?for=a%20b"]);
+  assert.match(printed.join("\n"), /^ok : true\nworkspaceId : "a b"\nworkspace : "Sales"\n\ndrives : \(none\)\n\ncallers : \(none\)/);
+  assert.match(printed.join("\n"), /id : "call_1"\ncallee : "Billing"\ncalleeId : "b"/);
+});
+
+test("connection ls refuses a reply holding no group, and an empty id before any request", async (t) => {
+  const calls = stub(t, { nope: true });
+  await assert.rejects(ls.run([]), { code: "INVALID_RESPONSE" });
+  await assert.rejects(ls.run([""]), { code: "CLI_USAGE_ERROR" });
+  assert.deepEqual(calls, ["GET /api/connections"]);
 });

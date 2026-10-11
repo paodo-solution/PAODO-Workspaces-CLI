@@ -387,13 +387,11 @@ export const HELP = {
     description: "List every connection in the app — drive links and agent calls.",
     help: {
       "workspace-id|drive-id":
-        "Optional, and it names no noun because it does not need to: whichever list holds the id " +
-        "decides how the answer is shaped. Given a workspace, its drives, callers and callees, each " +
+        "Optional, and it names no noun because it does not need to: the app knows which of the two " +
+        "the id is, and that decides how the answer is shaped. Given a workspace, its drives, callers and callees, each " +
         "naming only the far end. Given a drive, the workspaces on it. Given neither, everything.",
       driveLinks: app("connection", "driveLinks"),
       agentCalls: app("connection", "agentCalls"),
-      "graph off":
-        "agentCalls is absent, with a note, where the app has the graph turned off. Drive links are unaffected.",
       id:
         "The link's own handle, and the only place it is published. It belongs to the link rather than " +
         "to either end, so two workspaces sharing a drive have one id each.",
@@ -401,7 +399,7 @@ export const HELP = {
         "The id of the thing at that end of the link, next to its name — this is what the other " +
         "commands take, and it is published even where the name reads (not found).",
       "(not found)":
-        "An id nothing answers to: something deleted while this was reading, or a link the app never " +
+        "An id nothing answers to: a link left naming something since deleted, or one the app never " +
         "checked against anything. The link is real — what it names is not.",
       "vs the counts":
         "`workspace get` and `drive get` count connections under `connections`, in these same words. " +

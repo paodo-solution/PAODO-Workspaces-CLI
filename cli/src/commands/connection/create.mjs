@@ -1,6 +1,7 @@
 import { connect } from "../../client.mjs";
 import { rethrowUnpublished } from "../../contract.mjs";
-import { Note, receipt } from "../../output.mjs";
+import { receipt } from "../../output.mjs";
+import { namedEnds } from "./endpoints.mjs";
 
 /**
  * Connect two things, whichever two they are: a drive to a workspace, or a workspace to a workspace.
@@ -16,11 +17,7 @@ async function run([from, to]) {
   const { id, kind: _kind, ...ends } = await connect()
     .json("/api/connections", { method: "POST", body: { from, to } })
     .catch((error) => rethrowUnpublished(error, "connect two ids in one request (POST /api/connections)"));
-  const named = Object.entries(ends).flatMap(([role, end]) => [
-    [role, end?.name ?? new Note("(not found)")],
-    [`${role}Id`, end?.id],
-  ]);
-  receipt({ connectionId: id }, Object.fromEntries(named));
+  receipt({ connectionId: id }, namedEnds(ends));
 }
 
 export default {

@@ -1,4 +1,4 @@
-# PAODO CLI
+# PAODO Workspaces CLI
 
 Command-line client for a PAODO Workspace app.
 

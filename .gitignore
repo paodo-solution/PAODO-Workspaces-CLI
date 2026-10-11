@@ -1,0 +1,30 @@
+# Secrets and local overrides
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build and package output
+*.tgz
+dist/
+coverage/
+
+# Test output (regenerated on every run)
+tests/report.json
+tests/.scratch/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Local agent settings
+.claude/settings.local.json

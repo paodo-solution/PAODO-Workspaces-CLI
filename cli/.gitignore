@@ -1,0 +1,9 @@
+# Local CLI secrets and overrides
+.env
+.env.*
+# ...except the template, which carries no value and is the one file that documents the other two.
+!.env.example
+
+# Generated output
+*.tgz
+node_modules/

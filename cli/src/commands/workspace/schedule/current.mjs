@@ -1,6 +1,5 @@
 // A workspace's one scheduled job, as get and set both read it: never absent, always enabled or disabled.
 import { workspacePath } from "../../../client.mjs";
-import { contractFields } from "../../../contract.mjs";
 import { Note } from "../../../output.mjs";
 
 export function schedulePath(id) {
@@ -17,16 +16,6 @@ export function endsOf(schedule) {
   return schedule.endAt || new Note("never (runs until disabled)");
 }
 
-/**
- * The job a workspace has before the app stores one: every setting the app's contract names, empty, and
- * disabled. Nothing is pre-filled, since an agent never sees a guess — the first set names each setting
- * and the app refuses any missing. Built from the contract so a setting the app gains is shown here too.
- */
-async function emptyJob() {
-  const settings = Object.entries(await contractFields("schedule"));
-  return Object.fromEntries([...settings.map(([name, { type }]) => [name, type === "boolean" ? false : null]), ["nextRunAt", null]]);
-}
-
 /** `endAt` right after `startAt`, printed as (none) when unset rather than left out. */
 function withEndAt(job, endAt) {
   const ordered = {};
@@ -38,12 +27,10 @@ function withEndAt(job, endAt) {
 }
 
 /**
- * The stored job with its own id first and the envelope's `workspaceId` dropped, or the empty job when
- * none is stored yet.
+ * The job as the app answers it, with its own id first and the envelope's `workspaceId` dropped. A job
+ * never saved is the app's answer too: every setting empty, disabled, and no id.
  */
 export async function readSchedule(client, id) {
-  const stored = await client.json(schedulePath(id));
-  if (!stored) return emptyJob();
-  const { id: scheduleId, workspaceId: _workspaceId, endAt = null, ...rest } = stored;
-  return withEndAt({ id: scheduleId, ...rest }, endAt);
+  const { id: scheduleId, workspaceId: _workspaceId, endAt = null, ...rest } = await client.json(schedulePath(id));
+  return withEndAt({ ...(scheduleId ? { id: scheduleId } : {}), ...rest }, endAt);
 }

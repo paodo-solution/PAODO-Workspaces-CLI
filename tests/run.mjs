@@ -339,8 +339,8 @@ const STUB_SCENARIOS = {
   status: (res, segments) => res.writeHead(Number(segments[2]), { "Content-Type": "text/plain" }).end("no envelope here"),
   // A status with no entry in CODE_BY_STATUS, so the fallback spelling is what shows.
   teapot: (res) => res.writeHead(418, { "Content-Type": "application/json" }).end("{}"),
-  // The three routes whose success shape cannot carry `ok` — `workspace ls`, `drive ls`, and the four
-  // reads `connection ls` composes — so each checks the shape itself.
+  // The three routes whose success shape cannot carry `ok` — `workspace ls`, `drive ls`, and the
+  // listing `connection ls` relays — so each checks the shape itself.
   notarray: (res) => res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ nope: true })),
   emptytar: (res) => res.writeHead(200, { "Content-Type": "application/x-tar" }).end(),
   outsidepayload: (res) =>
@@ -408,8 +408,7 @@ function reserveClosedPort() {
 // Order is execution order: the lifecycle groups depend on the workspace or drive an earlier case
 // created, and each key verb depends on the state the previous one left. `argv`, `env`, `match` and
 // `notMatch` may each be a function of the captured context. `needs` names context keys that must
-// exist, so a failed create skips its dependents instead of turning one failure into thirty — and it is
-// also how a capability the deployment may not have (the agent-call graph) skips rather than fails.
+// exist, so a failed create skips its dependents instead of turning one failure into thirty.
 //
 // expect:
 //   "receipt" — exit 0 and `ok : true`        (every command that goes through output.mjs's receipt)
@@ -453,7 +452,6 @@ const LEAVES = [
 const TRANSFER_TIMEOUT = 90_000;
 const CONFIG_ERROR = "CLI_CONFIG_ERROR";
 const USAGE_ERROR = "CLI_USAGE_ERROR";
-const NOT_FOUND = "CLI_NOT_FOUND";
 
 /** Endpoint pointed at one stub scenario. The CLI appends its own route to it. */
 const stubEnv = (scenario) => (c) => ({ PAODO_ENDPOINT: `${c.stub}/${scenario}` });
@@ -619,6 +617,7 @@ const CASES = [
   // Connections. Three of these never reach the app: the id prefix says which graph a removal belongs
   // to, and a connection joining a thing to itself is refused before either id is looked up.
   { group: "dispatch", id: "arity.connection.ls.two", argv: ["connection", "ls", "a", "b"], expect: "error", code: USAGE_ERROR, match: ["Usage: paodo connection ls"] },
+  { group: "dispatch", id: "guard.connection.ls.empty-id", argv: ["connection", "ls", ""], expect: "error", code: USAGE_ERROR, match: ["Workspace or drive id is required."] },
   { group: "dispatch", id: "arity.connection.create.none", argv: ["connection", "create"], expect: "error", code: USAGE_ERROR },
   { group: "dispatch", id: "arity.connection.create.one", argv: ["connection", "create", MISSING_ID], expect: "error", code: USAGE_ERROR, match: ["Usage: paodo connection create"] },
   { group: "dispatch", id: "arity.connection.create.three", argv: ["connection", "create", MISSING_ID, MISSING_ID_2, "extra"], expect: "error", code: USAGE_ERROR },
@@ -685,13 +684,13 @@ const CASES = [
     code,
     match: ["no envelope here"],
   })),
-  // The three commands whose success shape is a bare array, or is assembled from several of them, so
-  // each has to check the shape itself rather than trust an `ok` there is nowhere to put.
+  // The three listings whose reply carries no `ok` of its own, so each has to check the shape itself
+  // rather than trust one there is nowhere to put.
   { group: "transport", id: "transport.workspace-list-not-array", argv: ["workspace", "ls"], env: stubEnv("notarray"), needs: ["stub"], expect: "error", code: "INVALID_RESPONSE", match: ["invalid workspace list"] },
   { group: "transport", id: "transport.drive-list-not-array", argv: ["drive", "ls"], env: stubEnv("notarray"), needs: ["stub"], expect: "error", code: "INVALID_RESPONSE", match: ["invalid drive list"] },
-  // `connection ls` joins four reads into one answer, so a malformed one of them has to surface as a
-  // refusal rather than as an edge list assembled out of whatever did parse.
-  { group: "transport", id: "transport.connection-reads-not-arrays", argv: ["connection", "ls"], env: stubEnv("notarray"), needs: ["stub"], expect: "error", code: "INVALID_RESPONSE", match: ["invalid"] },
+  // `connection ls` relays whatever groups the app names, so a reply holding no group at all has to
+  // surface as a refusal rather than as a listing with nothing in it.
+  { group: "transport", id: "transport.connection-listing-has-no-groups", argv: ["connection", "ls"], env: stubEnv("notarray"), needs: ["stub"], expect: "error", code: "INVALID_RESPONSE", match: ["invalid connection listing"] },
   // An archive with no entries at all. Not the `!response.body` guard — fetch hands over a body stream
   // even for a zero-length 200, so that one is unreachable over HTTP and is the only guard in
   // extractResponse this group does not cover.
@@ -747,16 +746,8 @@ const CASES = [
     id: "connection.ls.all",
     argv: ["connection", "ls"],
     expect: "receipt",
-    // `agentCalls` is deliberately not asserted: a deployment with the workspace graph turned off omits
-    // it and says so in a note, and that is a supported configuration rather than a failure. Drive
-    // links are the half that is always there.
-    match: ["driveLinks"],
-    // Which is also why it is captured. Every agent-call case below needs this key, so on a deployment
-    // without the graph they skip with a reason instead of failing against a feature that is off.
-    capture(out, ctx) {
-      if (!out.includes("workspace graph turned off")) ctx.graph = true;
-    },
-    note: "agent-call cases are skipped, not failed, where this reports the graph turned off",
+    // Both kinds are always there, each as a list: the app serves both graphs unconditionally.
+    match: ["driveLinks", "agentCalls"],
   },
   { group: "app", id: "workspace.get.missing", argv: ["workspace", "get", MISSING_ID], expect: "error" },
   { group: "app", id: "workspace.set.missing", argv: ["workspace", "set", MISSING_ID, "name=nope"], expect: "error" },
@@ -766,10 +757,9 @@ const CASES = [
   { group: "app", id: "drive.file.ls.missing-drive", argv: ["drive", "file", "ls", MISSING_ID], expect: "error" },
   { group: "app", id: "workspace.get.not-a-uuid", argv: ["workspace", "get", "../../etc/passwd"], expect: "error", note: "an id is encoded, so it cannot become a different route" },
   { group: "app", id: "drive.get.not-a-uuid", argv: ["drive", "get", "../../etc/passwd"], expect: "error" },
-  // An id in neither registry is refused by the CLI, with its own code — not sent to a route that would
-  // answer NOT_FOUND, and not answered with an empty listing, which is what "nothing is connected to
-  // it" looks like and is the one thing it must not be confused with.
-  { group: "app", id: "connection.ls.unknown-id", argv: ["connection", "ls", MISSING_ID], expect: "error", code: NOT_FOUND, match: ["No workspace or drive has the id"] },
+  // An id in neither registry is refused by the app — not answered with an empty listing, which is
+  // what "nothing is connected to it" looks like and is the one thing it must not be confused with.
+  { group: "app", id: "connection.ls.unknown-id", argv: ["connection", "ls", MISSING_ID], expect: "error", code: "NOT_FOUND", match: ["no workspace or drive has the id"] },
   { group: "app", id: "connection.create.unknown-ids", argv: ["connection", "create", MISSING_ID, MISSING_ID_2], expect: "error", code: "NOT_FOUND", match: ["no workspace or drive has the id"] },
   // `deleted : false` is the documented answer for an id that is connected to nothing — including one
   // already removed, and one whose workspace or drive went away since `ls` printed it. A refusal here
@@ -1090,10 +1080,7 @@ const CASES = [
   {
     group: "connection",
     id: "connection.create.call",
-    // `graph` comes from the app group's `connection ls`: a deployment with the workspace graph turned
-    // off has no agent calls to make, and these cases skip rather than fail against a feature that is
-    // switched off. Drive links are unaffected by it.
-    needs: ["ws", "ws2", "graph"],
+    needs: ["ws", "ws2"],
     argv: (c) => ["connection", "create", c.ws, c.ws2],
     expect: "receipt",
     match: ["connectionId", "caller :", "callee :", WS_NAME, WS2_NAME],
@@ -1229,7 +1216,7 @@ const CASES = [
 // `--only` names groups, but the lifecycle groups are a chain: `files` without the create that precedes
 // it is a run of skips, and — worse — a run that could create nothing and therefore clean nothing up.
 // Selecting any group scoped to a workspace or a drive pulls in the creates it needs, the app reads its
-// model values and its graph flag come from, and the teardown that deletes all of it.
+// model values come from, and the teardown that deletes all of it.
 const LIFECYCLE_GROUPS = ["workspace", "files", "drive", "drivefiles", "connection", "keys", "teardown"];
 
 function resolveSelection() {
@@ -1649,9 +1636,6 @@ async function main() {
     scratchDir: TMP,
     selection: ONLY ? [...ONLY] : "all groups",
     aborted,
-    // Absent when the deployment has the workspace graph turned off, which skips the agent-call cases
-    // rather than failing them — so the report has to say which of the two a run was.
-    agentCallGraph: context.graph ? "available" : "unavailable — agent-call cases were skipped",
     serverImpact: {
       requestsSentToApp: records.filter((r) => r.appFacing !== false && r.command && r.verdict !== "skipped").length,
       offlineCases: records.filter((r) => r.appFacing === false).length,

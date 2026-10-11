@@ -11,9 +11,8 @@ node_modules/
 dist/
 coverage/
 
-# Test output (regenerated on every run)
-tests/report.json
-tests/.scratch/
+# Local regression suite and its output: kept on this machine, never shipped
+tests/
 
 # Logs
 *.log

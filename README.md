@@ -52,8 +52,4 @@ The built-in help is the authoritative reference; this table is only a map.
 
 ```bash
 cd cli && npm test               # unit tests, no network
-node tests/run.mjs --offline     # regression groups that never reach the app
-node tests/run.mjs               # full run against the configured app
 ```
-
-The full run creates and deletes real workspaces and drives on the configured app.

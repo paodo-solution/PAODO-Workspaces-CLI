@@ -111,7 +111,7 @@ function fileHelp(noun, notes = {}) {
       help: {
         [`${noun}-path`]:
           "A trailing slash marks a directory — removes it and everything inside, in one receipt. " +
-          `"/" is the ${noun} root, which empties it.`,
+          `The ${noun} root ("/") is refused: name the entries to delete.`,
         removed:
           "Every path that went, the directory itself first. Long lists stop early; removedCount is " +
           "always the whole of it.",

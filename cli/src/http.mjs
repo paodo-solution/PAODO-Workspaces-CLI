@@ -28,7 +28,7 @@ const CODE_BY_STATUS = {
  * The app contract this CLI's routes and receipts were written against. The app names the one it serves
  * on every response (`X-Paodo-Contract`); an app from before the header names none and is not judged.
  */
-export const CONTRACT_VERSION = 1;
+export const CONTRACT_VERSION = 2;
 
 let skewWarned = false;
 
@@ -37,7 +37,7 @@ function contractSkew(response) {
   const served = response.headers.get("x-paodo-contract")?.trim();
   if (!served || served === String(CONTRACT_VERSION)) return undefined;
   return (
-    `This CLI was written for PAODO contract ${CONTRACT_VERSION} and this app serves ${served}, ` +
+    `This CLI was written for PAODO contract v${CONTRACT_VERSION} and this app serves v${served}, ` +
     "so a command may be refused or its receipt misread. Update whichever is older."
   );
 }

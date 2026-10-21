@@ -13,7 +13,11 @@ async function run([reference, ...assignments]) {
   const id = requireWorkspaceId(reference);
   const body = encodeAssignments(typed, await contractFields("workspace"));
   const result = await connect().json(workspacePath(id), { method: "PATCH", body });
-  receipt({ workspaceId: result.workspaceId ?? id }, { applied: result.applied });
+  // The app's warning, when it sends one, is relayed as written: the CLI knows no field's rules.
+  receipt(
+    { workspaceId: result.workspaceId ?? id },
+    { applied: result.applied, ...(result.warning ? { warning: result.warning } : {}) },
+  );
 }
 
 export default {

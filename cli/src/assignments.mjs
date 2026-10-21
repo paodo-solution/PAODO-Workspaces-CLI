@@ -5,11 +5,13 @@ import { usageError } from "./errors.mjs";
  * Wire encoding, not validation. A value its field's declared type cannot hold travels as the string it
  * arrived as, and so do unknown fields, because the app's shared operation owns the authoritative
  * field/type/range rules and answers with the same error the UI receives. An int is plain decimal
- * digits only, so `0x10` or `1e2` reach the app as text and are refused, never read as 16 or 100.
+ * digits only, so `0x10` or `1e2` reach the app as text and are refused, never read as 16 or 100. A
+ * string[] is comma-separated, and an empty value is an empty list.
  */
 function encode(type, value) {
   if (type === "boolean" && (value === "true" || value === "false")) return value === "true";
   if (type === "int" && /^-?\d+$/.test(value)) return Number(value);
+  if (type === "string[]") return value.split(",").map((item) => item.trim()).filter(Boolean);
   return value;
 }
 

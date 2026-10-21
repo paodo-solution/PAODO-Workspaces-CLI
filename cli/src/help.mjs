@@ -196,6 +196,7 @@ export const HELP = {
       fields: () => describeFields("workspace"),
       validation:
         "Values are not checked here — they are sent as given, and the app validates them; a rejected value comes back as the app's own error.",
+      lists: "A string[] field takes comma-separated values, e.g. allowedDomains=api.vercel.com,github.com; an empty value sends an empty list.",
     },
   },
   "workspace rm": { usage: "paodo workspace rm <workspace-id>", description: "Delete a workspace." },

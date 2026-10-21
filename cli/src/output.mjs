@@ -1,5 +1,5 @@
-// Command results as terminal text: `key : value` per scalar; a nested value gets a `key :` header, a
-// blank line, then its own fields flush left — the blank line, not indentation, says they belong to it.
+// Command results as terminal text: `key : value` per one-line field; a nested value gets a `key :` header,
+// a blank line, then its own fields flush left — the blank line, not indentation, says they belong to it.
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -12,7 +12,7 @@ function scalar(value) {
   return value === null || value === undefined || value === "" ? "(none)" : String(value);
 }
 
-/** An object's own fields as blocks — a run of consecutive scalar fields is one block; a nested field is a header block plus its own value's blocks, in the object's own key order. */
+/** An object's own fields as blocks — a run of consecutive one-line fields is one block; a nested field is a header block plus its own value's blocks, in the object's own key order. */
 function objectBlocks(obj) {
   const entries = Object.entries(obj);
   if (entries.length === 0) return [["(none)"]];
@@ -25,9 +25,14 @@ function objectBlocks(obj) {
       run.push(key ? `${key} : ${scalar(value)}` : scalar(value));
       continue;
     }
+    const blocks = fieldBlocks(key, value);
+    if (blocks.length === 1 && blocks[0].length === 1) {
+      run.push(blocks[0][0]);
+      continue;
+    }
     if (run.length) result.push(run);
     run = [];
-    result.push(...fieldBlocks(key, value));
+    result.push(...blocks);
   }
   if (run.length) result.push(run);
   return result;

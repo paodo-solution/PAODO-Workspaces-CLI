@@ -69,7 +69,7 @@ test("connection ls names the id it was given and puts the subject the app answe
   t.mock.method(console, "log", (text) => printed.push(text));
   await ls.run(["a b"]);
   assert.deepEqual(calls, ["GET /api/connections?for=a%20b"]);
-  assert.match(printed.join("\n"), /^ok : true\nworkspaceId : "a b"\nworkspace : "Sales"\n\ndrives : \(none\)\n\ncallers : \(none\)/);
+  assert.match(printed.join("\n"), /^ok : true\nworkspaceId : "a b"\nworkspace : "Sales"\ndrives : \(none\)\ncallers : \(none\)\n\ncallees :/);
   assert.match(printed.join("\n"), /id : "call_1"\ncallee : "Billing"\ncalleeId : "b"/);
 });
 

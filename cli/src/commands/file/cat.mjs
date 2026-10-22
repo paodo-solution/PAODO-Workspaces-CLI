@@ -16,8 +16,8 @@ import { filePath, spaceRoot } from "./route.mjs";
  * is written here is what to type.
  */
 export const OPTIONS = {
-  offset: "int, 0-based line to start at. Omit for the first line.",
-  limit: "int, how many lines to return. Omit for the rest of the file.",
+  offset: { type: "int", text: "0-based line to start at. Omit for the first line." },
+  limit: { type: "int", text: "How many lines to return. Omit for the rest of the file." },
 };
 
 /**

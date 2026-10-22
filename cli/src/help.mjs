@@ -2,8 +2,9 @@
 // A leaf needs `usage`; entries import a command's OPTIONS, and fileHelp writes both file groups once.
 // A value may be a function, awaited when its entry prints: what the app owns is read from the app.
 import { CliError } from "./errors.mjs";
-import { describeFields, description, fromApp, channels, limit } from "./contract.mjs";
+import { describeField, describeFields, description, fromApp, channels, limit } from "./contract.mjs";
 import { OPTIONS as FILE_CAT_OPTIONS } from "./commands/file/cat.mjs";
+import { entry } from "./output.mjs";
 
 /** The app's own sentences about a resource — all of them, or the one under `key`. */
 const app = (resource, key) =>
@@ -16,6 +17,14 @@ const app = (resource, key) =>
 
 /** The CLI's own lines first, then the app's sentences about `resource`, in one block. */
 const appAfter = (first, resource) => fromApp(async () => ({ ...first, ...(await description(resource)) }));
+
+/** A command's options, laid out as set's fields are: `--name  <type>`, then what it does. */
+const describeOptions = (options) => ({
+  "": Object.entries(options).map(([name, { type, text }]) => entry(`--${name}  <${type}>`, text)).join("\n\n"),
+});
+
+/** A create argument: the CLI's own words on how to pass it, then the app's text for the field it sets. */
+const argument = (own, resource, field) => async () => `${own} ${await fromApp(() => describeField(resource, field))()}`;
 
 /**
  * The six entries for one noun's file group, keyed the way main.mjs walks them.
@@ -67,7 +76,7 @@ function fileHelp(noun, notes = {}) {
       usage: `paodo ${noun} file cat ${id} <${noun}-path> [--offset N] [--limit N]`,
       description: `Read a text file from a ${noun}.`,
       help: {
-        options: FILE_CAT_OPTIONS,
+        options: describeOptions(FILE_CAT_OPTIONS),
         text:
           "Text only, window or no window: an image or a binary file is refused rather than printed, " +
           `since its bytes are not something a terminal can show. Use "paodo ${noun} file get" to pull ` +
@@ -126,6 +135,16 @@ const SCHEDULE_MODEL =
   "One scheduled job per workspace. It always exists, either enabled or disabled, and every " +
   "receipt says which under `state`.";
 
+/** The one sentence both schedule commands give about when a job ends. */
+const SCHEDULE_ENDS =
+  "Printed on every get and set receipt beside state: the endAt that stops the job, or never (runs until " +
+  "disabled) when it has none.";
+
+/** Every `set` sends values unchecked; the app is the one that refuses them. */
+const VALIDATION =
+  "Values are not checked here — they are sent as given, and the app validates them; a rejected value comes " +
+  "back as the app's own error.";
+
 export const HELP = {
   "": {
     usage: "paodo <app|workspace|drive|connection> ...",
@@ -152,6 +171,7 @@ export const HELP = {
         call: "One tool the agent ran during a session: what it was given and what it returned.",
         local: "An ordinary path on this machine, resolved from the current directory — the other side of a file transfer.",
         source: "Which path space — the workspace's, the drive's, or local — a transfer read from.",
+        destination: "Which path space — the workspace's, the drive's, or local — a transfer wrote into.",
         dest: "The path a transfer writes to — paired the same way, e.g. drive-dest, local-dest.",
         created: "Paths a transfer wrote where nothing was.",
         overwritten: "Paths a transfer replaced.",
@@ -160,7 +180,6 @@ export const HELP = {
         note:
           "A caveat about the receipt holding it: what the command could not show in full, and what to " +
           "do about it. Present only when there is one, so a receipt without it is complete.",
-        destination: "Which path space — the workspace's, the drive's, or local — a transfer wrote into.",
       },
       environment:
         "PAODO_ENDPOINT and PAODO_TOKEN, read from the .env file beside the CLI (resolved from the CLI's " +
@@ -187,15 +206,14 @@ export const HELP = {
   "workspace create": {
     usage: "paodo workspace create <name>",
     description: "Create a new workspace.",
-    help: { name: "One argument. Quote it if it contains spaces." },
+    help: { name: argument("One argument. Quote it if it contains spaces.", "workspace", "name") },
   },
   "workspace set": {
     usage: "paodo workspace set <workspace-id> field=value ...",
     description: "Configure a workspace's fields.",
     help: {
       fields: () => describeFields("workspace"),
-      validation:
-        "Values are not checked here — they are sent as given, and the app validates them; a rejected value comes back as the app's own error.",
+      validation: VALIDATION,
       lists: "A string[] field takes comma-separated values, e.g. allowedDomains=api.vercel.com,github.com; an empty value sends an empty list.",
     },
   },
@@ -233,8 +251,7 @@ export const HELP = {
     description: "Get a workspace's scheduled job and whether it is enabled or disabled.",
     help: {
       model: SCHEDULE_MODEL,
-      ends:
-        "When the job stops on its own: endAt, or never (runs until disabled) when it has none. Also on every set receipt.",
+      ends: SCHEDULE_ENDS,
       "(none)": "A setting not set yet. A workspace that never had a job shows every setting so, disabled.",
       lastRun: app("schedule", "lastRun"),
       times: app("schedule", "times"),
@@ -249,13 +266,11 @@ export const HELP = {
       "first set":
         "Name intervalValue, intervalUnit, startAt and timezone, and prompt to enable — nothing is filled " +
         "in for you, and the app names every one missing in one error.",
-      "enable, disable": "enabled=true enables the job and enabled=false disables it; its configuration is kept either way.",
       merge: "Only named fields are sent. The server merges them atomically; concurrent edits to different fields are preserved.",
-      ends: "Printed on every receipt beside state: the endAt that stops the job, or never (runs until disabled).",
+      ends: SCHEDULE_ENDS,
       timing: app("schedule", "timing"),
       applied: "Each field named, as the app stored it, then nextRunAt: when an enabled job fires next.",
-      validation:
-        "Values are not checked here — they are sent as given, and the app validates them; a rejected value comes back as the app's own error.",
+      validation: VALIDATION,
     },
   },
 
@@ -340,12 +355,13 @@ export const HELP = {
     usage: "paodo drive create <name> [description]",
     description: "Create a new drive, with its description if you have one.",
     help: {
-      name: "One argument. Quote it if it contains spaces.",
+      name: argument("One argument. Quote it if it contains spaces.", "drive", "name"),
       // Bracketed to match the usage line, and because a bare `description` is the one-liner's own key.
-      "[description]":
-        "Optional, and one argument too — not field=value, which is drive set's spelling for changing " +
-        "one later. Shown to every agent connected to the drive, so say what belongs in it.",
-      unique: app("drive", "unique"),
+      "[description]": argument(
+        "Optional, and one argument too — not field=value, which is drive set's spelling for changing one later.",
+        "drive",
+        "description",
+      ),
     },
   },
   "drive set": {
@@ -353,8 +369,7 @@ export const HELP = {
     description: "Rename or re-describe a drive.",
     help: {
       fields: () => describeFields("drive"),
-      validation:
-        "Values are not checked here — they are sent as given, and the app validates them; a rejected value comes back as the app's own error.",
+      validation: VALIDATION,
     },
   },
   "drive rm": {

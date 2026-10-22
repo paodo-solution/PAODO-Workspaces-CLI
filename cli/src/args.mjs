@@ -15,8 +15,8 @@ import { usageError } from "./errors.mjs";
 
 /**
  * @param argv the command's arguments, with the command name already removed
- * @param spec the options this command declares, as `{ name: description }` — the description is what
- *   `--help` prints, so the set that parses and the set that is documented cannot drift apart
+ * @param spec the options this command declares, as `{ name: { type, text } }` — what `--help` prints,
+ *   so the set that parses and the set that is documented cannot drift apart
  * @returns `{ help, positional, options }`, options keyed by name with string values
  */
 export function parse(argv, spec = {}) {

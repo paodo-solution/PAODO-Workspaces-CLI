@@ -7,7 +7,7 @@ import { ROOT } from "./commands/index.mjs";
 import { HELP } from "./help.mjs";
 import { parse } from "./args.mjs";
 import { usageError } from "./errors.mjs";
-import { print } from "./output.mjs";
+import { print, prose } from "./output.mjs";
 
 const wantsHelp = (word) => word === undefined || word === "help" || word === "-h" || word === "--help";
 
@@ -74,11 +74,11 @@ async function help(node, path) {
     throw new Error(`help.mjs entry for "paodo ${path}" has help key(s) --help reserves: ${clashes.join(", ")}. Rename them.`);
   }
   const resolved = await settle(extra ?? {});
-  return {
+  return prose({
     ...(description ? { description } : {}),
     ...(node.commands ? { commands: usageTree(node, path) } : {}),
     ...resolved,
-  };
+  });
 }
 
 export async function run(argv) {

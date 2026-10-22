@@ -3,12 +3,26 @@ import assert from "node:assert/strict";
 import create from "../src/commands/connection/create.mjs";
 import ls from "../src/commands/connection/ls.mjs";
 import { issue } from "../src/commands/workspace/key/channel.mjs";
-import { channels, limit } from "../src/contract.mjs";
+import { channels, describeFields, limit } from "../src/contract.mjs";
+import { format } from "../src/output.mjs";
 
 process.env.PAODO_ENDPOINT = "https://example.invalid";
 process.env.PAODO_TOKEN = "test-only-no-network";
 
-const CONTRACT = { channels: { api: "api-key", sse: "sse-config" }, limits: { listingEntries: 7 } };
+const CONTRACT = {
+  channels: { api: "api-key", sse: "sse-config" },
+  limits: { listingEntries: 7 },
+  fields: {
+    workspace: {
+      name: { type: "string", rule: "1-100 characters" },
+      intervalUnit: { type: "string", values: ["minute", "hour"] },
+      internetAccess: {
+        type: "boolean",
+        effect: "While false, the container reaches no host. While true, it reaches every host unless domainRestriction is true.",
+      },
+    },
+  },
+};
 
 /** A fetch that serves the contract and records everything else, answering it with `reply`. */
 function stub(t, reply = {}) {
@@ -26,6 +40,26 @@ test("the contract is read once however many parts are asked for", async (t) => 
   assert.equal(await limit("listingEntries"), 7);
   assert.deepEqual(Object.keys(await channels()), ["api", "sse"]);
   assert.deepEqual(calls, ["GET /api/contract"]);
+});
+
+test("set --help lays each field out as kubectl explain does: name and type, then its text wrapped beneath", async (t) => {
+  stub(t);
+  const text = format({ fields: await describeFields("workspace")() });
+  assert.equal(
+    text,
+    [
+      "fields :",
+      "",
+      "  name  <string>",
+      "    1-100 characters.",
+      "",
+      "  intervalUnit  <minute|hour>",
+      "",
+      "  internetAccess  <boolean>",
+      "    While false, the container reaches no host. While true, it reaches every",
+      "    host unless domainRestriction is true.",
+    ].join("\n"),
+  );
 });
 
 test("a channel the app published is usable, and a refusal lists the app's channels", async (t) => {

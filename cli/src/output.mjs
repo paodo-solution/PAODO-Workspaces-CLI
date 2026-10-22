@@ -1,5 +1,5 @@
 // Command results as terminal text: `key : value` per one-line field; a nested value gets a `key :` header,
-// a blank line, then its own fields flush left — the blank line, not indentation, says they belong to it.
+// a blank line, then its own fields flush left. Only help indents: prose too wide for a line, kubectl style.
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -12,6 +12,55 @@ function scalar(value) {
   return value === null || value === undefined || value === "" ? "(none)" : String(value);
 }
 
+/** The widest line help prints, so a page reads in an 80-column terminal. */
+const WIDTH = 80;
+
+/** Greedy word wrap to `width`; a longer word keeps a line of its own rather than being cut. */
+function wrap(text, width) {
+  const lines = [];
+  let current = "";
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    if (current && current.length + 1 + word.length > width) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = current ? `${current} ${word}` : word;
+    }
+  }
+  return current ? [...lines, current] : lines;
+}
+
+/** Help text too wide for its `key : value` line, printed as `key :` with the text wrapped and indented beneath. */
+class Paragraph {
+  constructor(text) {
+    this.text = text;
+  }
+}
+
+/** One term as kubectl explain lays it out: its head, then its text wrapped and indented beneath. */
+export function entry(head, text) {
+  return [`  ${head}`, ...wrap(text, WIDTH - 4).map((line) => `    ${line}`)].join("\n");
+}
+
+const fits = (key, item) => `${key} : ${item}`.length <= WIDTH;
+
+/** A group of named terms, printed as entries whatever their length, so one kind of group has one look. */
+function terms(group) {
+  const items = Object.entries(group);
+  if (!items.every(([key, item]) => key && typeof item === "string")) return group;
+  return { "": items.map(([key, item]) => entry(key, item)).join("\n\n") };
+}
+
+/** Help as printed: a top-level string too wide for one line becomes a Paragraph, a nested group its entries. */
+export function prose(help) {
+  return Object.fromEntries(
+    Object.entries(help).map(([key, item]) => [
+      key,
+      typeof item === "string" && key && !fits(key, item) ? new Paragraph(item) : isPlainObject(item) ? terms(item) : item,
+    ]),
+  );
+}
+
 /** An object's own fields as blocks — a run of consecutive one-line fields is one block; a nested field is a header block plus its own value's blocks, in the object's own key order. */
 function objectBlocks(obj) {
   const entries = Object.entries(obj);
@@ -19,6 +68,12 @@ function objectBlocks(obj) {
   const result = [];
   let run = [];
   for (const [key, value] of entries) {
+    if (value instanceof Paragraph) {
+      if (run.length) result.push(run);
+      run = [];
+      result.push([`${key} :`, ...wrap(value.text, WIDTH - 2).map((line) => `  ${line}`)]);
+      continue;
+    }
     if (isScalar(value)) {
       // An empty key means the caller already wrote the line(s) with nothing to label — help's
       // command lists do this so a command's own usage isn't preceded by its own name again.

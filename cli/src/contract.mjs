@@ -3,6 +3,7 @@
 // is how a rule ends up true in the app and stale in the CLI.
 import { connect } from "./client.mjs";
 import { CliError } from "./errors.mjs";
+import { entry } from "./output.mjs";
 
 /** How an app from before a route answers for it: not one the CLI token may call, or not there at all. */
 const UNPUBLISHED = new Set(["FORBIDDEN", "CLI_HTTP_FORBIDDEN", "CLI_HTTP_NOT_FOUND"]);
@@ -70,12 +71,26 @@ export function description(resource) {
   return part("describe", resource);
 }
 
-/** One field as `--help` prints it: its accepted values or its type, then the app's rule in words. */
-function line(field) {
-  if (!isObject(field)) return String(field);
-  const { type, values, rule } = field;
-  const kind = Array.isArray(values) && values.length ? values.join("|") : type === "boolean" ? "true|false" : type;
-  return [kind, rule].filter(Boolean).join(", ");
+/** The app's format phrase as a sentence, so the effect after it reads on. */
+const sentence = (phrase) => `${phrase[0].toUpperCase()}${phrase.slice(1)}${phrase.endsWith(".") ? "" : "."}`;
+
+/** A field's format then its effect, as one paragraph: the same words on set's entry and create's argument. */
+function fieldText(field) {
+  const { rule, effect } = isObject(field) ? field : { rule: String(field) };
+  return [rule && sentence(rule), effect].filter(Boolean).join(" ");
+}
+
+/** One field as kubectl explain lays it out: name and type, then its format and effect indented beneath. */
+function fieldEntry(name, field) {
+  const kind = isObject(field) && Array.isArray(field.values) && field.values.length ? field.values.join("|") : field?.type;
+  return entry(kind ? `${name}  <${kind}>` : name, fieldText(field));
+}
+
+/** One field's paragraph, for a command that takes it as an argument rather than as field=value. */
+export async function describeField(resource, name) {
+  const fields = await contractFields(resource);
+  if (!Object.hasOwn(fields, name)) throw new CliError("INVALID_RESPONSE", `PAODO's contract does not describe ${resource}.${name}.`);
+  return fieldText(fields[name]);
 }
 
 /**
@@ -94,10 +109,10 @@ export function fromApp(read) {
   };
 }
 
-/** The `fields` block of a `set --help`. */
+/** The `fields` block of a `set --help`, its entries a blank line apart; the empty key prints them bare (output.mjs). */
 export function describeFields(resource) {
   return fromApp(async () => {
     const fields = await contractFields(resource);
-    return Object.fromEntries(Object.entries(fields).map(([name, field]) => [name, line(field)]));
+    return { "": Object.entries(fields).map(([name, field]) => fieldEntry(name, field)).join("\n\n") };
   });
 }

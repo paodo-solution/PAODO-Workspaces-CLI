@@ -1,6 +1,19 @@
+<div align="center">
+
+<img src="assets/paodo-logo.svg" alt="PAODO" width="80" height="80">
+
 # PAODO Workspaces CLI
 
-Command-line client for a PAODO Workspace app.
+**Manage your PAODO Workspaces app from the terminal, built for coding agents.**
+
+[Website](https://paodo-solution.com/workspaces) ·
+[PAODO Workspaces](https://github.com/paodo-solution/PAODO-Workspaces) ·
+[Install](#install) ·
+[Usage](#usage)
+
+</div>
+
+---
 
 PAODO Workspace turns coding agents into controlled, callable AI services. Each workspace is an
 isolated container running its own coding agent, reachable through chat, an API or MCP. `paodo`
@@ -53,3 +66,7 @@ The built-in help is the authoritative reference; this table is only a map.
 ```bash
 cd cli && npm test               # unit tests, no network
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

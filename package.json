@@ -1,0 +1,33 @@
+{
+  "name": "@paodo/cli",
+  "version": "0.2.0",
+  "description": "Build, connect and supervise the agents of a PAODO Workspaces app from the terminal.",
+  "keywords": ["paodo", "cli", "agents", "ai", "workspaces", "mcp"],
+  "homepage": "https://github.com/paodo-solution/PAODO-Workspaces-CLI#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paodo-solution/PAODO-Workspaces-CLI.git"
+  },
+  "bugs": {
+    "url": "https://github.com/paodo-solution/PAODO-Workspaces-CLI/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "paodo": "./bin/paodo.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    ".env.example"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\""
+  },
+  "dependencies": {
+    "tar-stream": "^3.2.0"
+  }
+}

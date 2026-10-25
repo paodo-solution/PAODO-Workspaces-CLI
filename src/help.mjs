@@ -180,8 +180,8 @@ export const HELP = {
           "do about it. Present only when there is one, so a receipt without it is complete.",
       },
       environment:
-        "PAODO_ENDPOINT and PAODO_TOKEN, read from the .env file beside the CLI (resolved from the CLI's " +
-        "own install location, not the current directory), or from exported variables, which take precedence.",
+        "PAODO_ENDPOINT and PAODO_TOKEN, read from ~/.config/paodo/.env (or $XDG_CONFIG_HOME/paodo/.env), " +
+        "or from exported variables, which take precedence. The endpoint must be https unless it is localhost.",
     },
   },
 

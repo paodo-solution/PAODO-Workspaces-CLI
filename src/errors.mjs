@@ -1,5 +1,5 @@
-// The CLI consumes PAODO's public wire contract without importing app source: this directory will
-// become its own repository. Local failures use the same shape and their own clearly scoped codes.
+// The CLI consumes PAODO's public wire contract without importing app source. Local failures use
+// the same shape and their own clearly scoped codes.
 export class CliError extends Error {
   constructor(code, message, { details, requestId, publicBody, hint } = {}) {
     super(message);

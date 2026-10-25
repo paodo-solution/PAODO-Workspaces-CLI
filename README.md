@@ -15,9 +15,13 @@
 
 ---
 
-PAODO Workspace turns coding agents into controlled, callable AI services. Each workspace is an
-isolated container running its own coding agent, reachable through chat, an API or MCP. `paodo`
-lets you manage a whole app from a terminal or a script.
+PAODO Workspaces turns coding agents into controlled, callable AI services. Each workspace is an
+isolated container running its own coding agent, reachable through chat, an API or MCP.
+
+The CLI lets your coding agent build and run the agents of your PAODO app. It creates workspaces and
+gives each one what its agent needs: a model, instructions, skills and files. It connects them to
+shared drives and to each other, then exposes them through API and MCP keys or a scheduled run. Once
+they're running, it lets you see what each agent did, down to every tool call and what it cost.
 
 ## Requirements
 
@@ -27,15 +31,21 @@ lets you manage a whole app from a terminal or a script.
 ## Install
 
 ```bash
-cd cli
-npm install
-npm link          # puts `paodo` on your PATH
+npm install -g @paodo/cli    # puts `paodo` on your PATH
 ```
 
 ## Configure
 
-Copy `cli/.env.example` to `cli/.env`, then fill in `PAODO_ENDPOINT` (no trailing slash) and
-`PAODO_TOKEN`. Both values can be found in the settings of your PAODO app's UI.
+Create `~/.config/paodo/.env` with your app's endpoint and CLI token, both found in the settings of
+your PAODO app's UI:
+
+```bash
+PAODO_ENDPOINT=https://your-app.example.com
+PAODO_TOKEN=your-cli-token
+```
+
+The endpoint takes no trailing slash, and must be `https` unless it points at `localhost`.
+Exported variables of the same name take precedence over the file.
 
 ## Usage
 
@@ -60,12 +70,6 @@ paodo <group> ... --help    # arguments and fields of one command
 | `connection` | Links between a drive and a workspace, or between two workspaces |
 
 The built-in help is the authoritative reference; this table is only a map.
-
-## Tests
-
-```bash
-cd cli && npm test               # unit tests, no network
-```
 
 ## License
 

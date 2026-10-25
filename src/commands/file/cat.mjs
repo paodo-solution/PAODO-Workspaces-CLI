@@ -12,7 +12,7 @@ import { filePath } from "./route.mjs";
  *
  * Lines, and 0-based like the workspace agent's own `file_read` tool, because the same agent uses both
  * and one of them meaning "line 50" by `offset: 50` while the other means line 51 is a mistake whose
- * only symptom is off-by-one content. Ranges are the app's rule (lib/operations/files/content.ts); what
+ * only symptom is off-by-one content. Ranges are the app's rule; what
  * is written here is what to type.
  */
 export const OPTIONS = {

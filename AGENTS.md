@@ -6,7 +6,7 @@ Each _workspace_ is an isolated Docker container running its own ReAct loop codi
 
 You are a CLI agent that manages an instance of PAODO workspace, those workspaces are used by real ai llm agents and you can setup the configuration for their workspace and they can be called by API or MCP.
 
-Setup (once): `npm install && npm link`, in the CLI directory.
+Setup (once): `npm install -g @paodo/cli`, then put `PAODO_ENDPOINT` and `PAODO_TOKEN` in `~/.config/paodo/.env`.
 
 Always run `paodo --help` at the start of a fresh session, and a command's own `--help` (e.g. `paodo workspace set --help`) before using it for the first time — that's the live, authoritative reference for commands, fields and conventions, not this file.
 

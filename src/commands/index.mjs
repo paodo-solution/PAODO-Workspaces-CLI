@@ -1,5 +1,5 @@
 // The command tree, noun before verb (`paodo drive file cat` is commands/file/cat.mjs); help is in src/help.mjs.
-// commands/file/ is mounted under both workspace and drive; every command calls a route platformAccessPolicy.ts allows.
+// commands/file/ is mounted under both workspace and drive; every command calls a route the CLI token may use.
 import appModels from "./app/models.mjs";
 import appStatus from "./app/status.mjs";
 import connectionCreate from "./connection/create.mjs";

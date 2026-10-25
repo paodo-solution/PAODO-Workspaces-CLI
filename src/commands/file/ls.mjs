@@ -16,7 +16,7 @@ import { fileTree } from "./route.mjs";
  *
  *   - `name` is the last segment of `path`, stored a second time in the same object.
  *   - `type` is a field per entry to say what one character says, and the app strips that character
- *     from any path handed back to it (lib/files/relpath.ts), so the mark costs nothing downstream —
+ *     from any path handed back to it, so the mark costs nothing downstream —
  *     a listed directory is still a valid argument to cat, get and rm.
  *   - `children` exists to let a reader rebuild path prefixes that `path` already spells out in full,
  *     so flattening loses none of it. Empty at one level, and still flattened rather than assumed

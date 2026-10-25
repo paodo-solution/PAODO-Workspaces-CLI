@@ -4,7 +4,7 @@
 // This walk sends everything it finds. It used to fetch the app's ignore contract and pre-filter
 // against it, which meant a served contract, a validation of that served contract, a second exclusion
 // list to merge into the receipt — and two definitions of what travels, one of them here. The app
-// already applies the real one when the archive arrives (lib/operations/files/transfer.ts) and names
+// already applies the real one when the archive arrives and names
 // what it dropped in the receipt, so the only thing the pre-filter bought was not uploading bytes that
 // were going to be discarded. That is a bandwidth saving, not a rule, and it is not worth a copy of the
 // rule living in this client. Pushing a directory with a node_modules in it now uploads it and has it

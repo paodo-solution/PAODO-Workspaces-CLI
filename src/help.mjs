@@ -182,6 +182,9 @@ export const HELP = {
       environment:
         "PAODO_ENDPOINT and PAODO_TOKEN, read from ~/.config/paodo/.env (or $XDG_CONFIG_HOME/paodo/.env), " +
         "or from exported variables, which take precedence. The endpoint must be https unless it is localhost.",
+      version:
+        "paodo --version prints this CLI's npm release and the app contract it was written for. The app " +
+        "names the contract it serves on every response, and a mismatch is reported when one is seen.",
     },
   },
 

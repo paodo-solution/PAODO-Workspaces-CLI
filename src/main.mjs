@@ -3,13 +3,25 @@
 // What each one is called and says under `--help` is in src/help.mjs, keyed by the same path this file
 // walks — that separation, not this file, is where usage/description/help text lives; nothing below
 // declares any of it.
+import { readFileSync } from "node:fs";
 import { ROOT } from "./commands/index.mjs";
 import { HELP } from "./help.mjs";
 import { parse } from "./args.mjs";
 import { usageError } from "./errors.mjs";
+import { CONTRACT_VERSION } from "./http.mjs";
 import { print, prose } from "./output.mjs";
 
 const wantsHelp = (word) => word === undefined || word === "help" || word === "-h" || word === "--help";
+const wantsVersion = (word) => word === "-v" || word === "--version";
+
+/**
+ * The npm release and the app contract it was written for — two numbers that move independently, so
+ * both print: a mismatch with the app is judged on the contract, never on the release.
+ */
+function version() {
+  const { version: release } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  return { "npm version": release, "contract version": CONTRACT_VERSION };
+}
 
 /** help.mjs's entry for the path walked so far — "" at the root, "app key generate" style below it. */
 function textFor(path) {
@@ -86,6 +98,12 @@ export async function run(argv) {
   let path = "";
   let node = ROOT;
   let args = argv;
+
+  // Root only: below it, the leading word is a command, and a leaf's own options are its own.
+  if (wantsVersion(argv[0])) {
+    print(version());
+    return;
+  }
 
   // Walk down the tree one word at a time, each group narrowing the list the next word is checked
   // against. A loop rather than a case per level, so `workspace key generate` needs no new dispatch.

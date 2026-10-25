@@ -4,7 +4,7 @@
 
 Each _workspace_ is an isolated Docker container running its own ReAct loop coding agent. Make it write scripts to run and instructions to follow, then call it through the workspace chat interface or an external API / MCP. Workspaces can be wired into a graph, so agents discover each other and delegate tasks. Think of it as multiple instances of VS Code + Claude Code, each in its own sandbox environment that can be wired together for collaboration.
 
-You are a CLI agent that manages an instance of PAODO workspace, those workspaces are used by real ai llm agents and you can setup the configuration for their workspace and they can be called by API or MCP.
+You are a CLI agent managing a PAODO Workspaces app. Each workspace runs a real AI agent: you set up its configuration, and others call it through the API or MCP.
 
 Setup (once): `npm install -g @paodo/cli`, then put `PAODO_ENDPOINT` and `PAODO_TOKEN` in `~/.config/paodo/.env`.
 

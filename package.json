@@ -17,7 +17,7 @@
     "node": ">=22"
   },
   "bin": {
-    "paodo": "./bin/paodo.mjs"
+    "paodo": "bin/paodo.mjs"
   },
   "files": [
     "bin",

@@ -108,8 +108,8 @@ function fileHelp(noun, notes = {}) {
       help: {
         direction: `this machine -> ${noun}`,
         [`${noun}-dest`]:
-          `Defaults to the source's own name at the ${noun} root; "." merges its contents directly into ` +
-          "the root instead, and any path that already exists there is overwritten rather than refused.",
+          `The full target path, e.g. src/new.txt. Defaults to the source's name at the ${noun} root; ` +
+          '"." merges into the root. An existing file is overwritten.',
         ...notes.put,
       },
     },

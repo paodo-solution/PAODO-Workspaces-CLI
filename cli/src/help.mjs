@@ -120,7 +120,7 @@ function fileHelp(noun, notes = {}) {
       help: {
         [`${noun}-path`]:
           "A trailing slash marks a directory — removes it and everything inside, in one receipt. " +
-          `The ${noun} root ("/") is refused: name the entries to delete.`,
+          `The ${noun} root (".") is refused: name the entries to delete.`,
         removed:
           "Every path that went, the directory itself first. Long lists stop early; removedCount is " +
           "always the whole of it.",
@@ -155,9 +155,7 @@ export const HELP = {
           "A container PAODO created and configured, running its own agent — what the workspace commands " +
           "manage, and what a <workspace-id> argument names.",
         file:
-          "A path inside a workspace's or a drive's own directory, as the app tracks it — relative to " +
-          'that root, e.g. "src/main.ts", never "/workspace/src/main.ts". What the file commands read, ' +
-          "write and list. Both nouns carry the same five: workspace file ls, drive file ls, and so on.",
+          'A path relative to the workspace or drive root, as file ls prints it, e.g. "src/main.ts".',
         drive:
           "Shared storage on the host, connected to any number of workspaces, so a write to one is " +
           "visible to every workspace connected to it. Unlike a workspace it is not versioned: nothing " +

@@ -1,6 +1,6 @@
 import { connect } from "../../client.mjs";
 import { receipt } from "../../output.mjs";
-import { fileTree, spaceRoot } from "./route.mjs";
+import { fileTree } from "./route.mjs";
 
 /**
  * Every entry the route named, one per element, a directory marked by a trailing slash on its path.
@@ -78,7 +78,7 @@ function truncation({ truncated, limit }) {
 export default function (space) {
   async function run([reference, spacePath]) {
     const id = space.requireId(reference);
-    const listing = await fileTree(connect(), space, id, spaceRoot(spacePath), { measure: true, count: true });
+    const listing = await fileTree(connect(), space, id, spacePath, { measure: true, count: true });
     // The default string sort, so the order comes out of the bytes rather than the machine's locale.
     const entries = flatEntries(listing.tree).sort((left, right) =>
       left.path < right.path ? -1 : left.path > right.path ? 1 : 0,

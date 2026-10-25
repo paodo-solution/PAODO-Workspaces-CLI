@@ -1,13 +1,10 @@
 import { connect } from "../../client.mjs";
 import { receipt } from "../../output.mjs";
-import { filePath, spaceRoot } from "./route.mjs";
+import { filePath } from "./route.mjs";
 
 export default function (space) {
-  async function run([reference, spacePath]) {
+  async function run([reference, path]) {
     const id = space.requireId(reference);
-    // The root is sent as ".", the app's own spelling of it, so the app is the one that refuses it: a
-    // delete names one entry, and that rule and its wording are the app's.
-    const path = spaceRoot(spacePath) ?? ".";
 
     // The app already caps its own list, because a delete of a large tree would otherwise reply with a
     // few hundred thousand paths — so `removedCount` is the number, `removed` is as much of it as is

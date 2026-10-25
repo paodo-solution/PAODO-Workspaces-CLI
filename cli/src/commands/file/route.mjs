@@ -16,20 +16,10 @@ import { CliError } from "../../errors.mjs";
 // hand a later edit a path string where it asked for a URL. It is also the honest name now that the
 // same argument means a path in a workspace under one noun and a path in a drive under the other.
 
-/**
- * A caller reaching for the root types `/`, the way they would on any filesystem — but the app models
- * a path as relative-or-absent, never absolute, and rejects a leading slash outright. Stripping it
- * here, once, means every command below can accept what a person actually types instead of making each
- * of them reject it the same way the app does.
- *
- * Collapsing to `undefined` once nothing but slashes is left matters because "root" is spelled by
- * omitting the argument, not by sending an empty one — see fileTree below.
- */
-export function spaceRoot(spacePath) {
-  if (spacePath === undefined) return undefined;
-  const trimmed = spacePath.replace(/^\/+/, "");
-  return trimmed === "" ? undefined : trimmed;
-}
+// A path travels exactly as typed. The app models one path space, relative to the root, and refuses a
+// leading slash with the corrected path in its message — a `/workspace/...` copied from the agent's
+// own view included. Stripping the slash here used to turn that path into a different, valid one, so a
+// push landed in a new `workspace/` directory with an ok receipt instead of being refused.
 
 export function filePath(space, id, suffix, query = {}) {
   const params = new URLSearchParams();

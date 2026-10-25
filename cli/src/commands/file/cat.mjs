@@ -2,7 +2,7 @@ import { once } from "node:events";
 import { Readable } from "node:stream";
 import { connect } from "../../client.mjs";
 import { CliError } from "../../errors.mjs";
-import { filePath, spaceRoot } from "./route.mjs";
+import { filePath } from "./route.mjs";
 
 /**
  * The window `cat` can read instead of the whole file, spelled once: the value is both the set of
@@ -68,12 +68,11 @@ async function write(bytes) {
 export default function (space) {
   async function run([reference, spacePath], { offset, limit } = {}) {
     const id = space.requireId(reference);
-    const normalized = spaceRoot(spacePath);
-    const query = { path: normalized, raw: "1", offset, limit };
+    const query = { path: spacePath, raw: "1", offset, limit };
     const response = await connect().request(filePath(space, id, "content", query), {
       accept: "text/plain",
     });
-    requireText(response, normalized ?? `The ${space.noun} root`, space.noun);
+    requireText(response, spacePath, space.noun);
     if (!response.body) return;
     let held = "";
     for await (const chunk of Readable.fromWeb(response.body)) {

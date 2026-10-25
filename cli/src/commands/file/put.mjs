@@ -1,7 +1,7 @@
 import { connect } from "../../client.mjs";
 import { collectLocalTransfer, defaultDestination, packLocalTransfer } from "../../file-transfer.mjs";
 import { receipt } from "../../output.mjs";
-import { filePath, spaceRoot } from "./route.mjs";
+import { filePath } from "./route.mjs";
 
 /** This machine -> the named space. The mirror of get, so the local path is the one that is read. */
 export default function (space) {
@@ -9,7 +9,7 @@ export default function (space) {
     // Before the local walk, so an unusable id is refused without first reading the filesystem.
     const id = space.requireId(reference);
     const { items } = await collectLocalTransfer(localSource);
-    const dest = spaceRoot(suppliedDest) ?? defaultDestination(localSource);
+    const dest = suppliedDest ?? defaultDestination(localSource);
     // The app's receipt, relayed under the envelope. It already names what it created, overwrote and
     // refused, so there is no second exclusion list here to merge into it.
     const pushed = await connect().json(filePath(space, id, "transfer", { dest }), {

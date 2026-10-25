@@ -2,16 +2,15 @@ import path from "node:path";
 import { connect } from "../../client.mjs";
 import { receiveLocalTransfer } from "../../file-transfer.mjs";
 import { receipt } from "../../output.mjs";
-import { filePath, spaceRoot } from "./route.mjs";
+import { filePath } from "./route.mjs";
 
 /** The named space -> this machine. The named path is read; the local one is written. */
 export default function (space) {
   async function run([reference, spaceSource, suppliedDest]) {
     const id = space.requireId(reference);
-    const normalized = spaceRoot(spaceSource);
-    const root = normalized === undefined || normalized === ".";
-    const localDest = suppliedDest ?? (root ? "." : path.posix.basename(normalized.replace(/\/$/, "")));
-    const response = await connect().request(filePath(space, id, "transfer", { path: normalized }), {
+    const root = spaceSource === ".";
+    const localDest = suppliedDest ?? (root ? "." : path.posix.basename(spaceSource.replace(/\/$/, "")));
+    const response = await connect().request(filePath(space, id, "transfer", { path: spaceSource }), {
       accept: "application/x-tar",
     });
     // A pull writes to this machine, so it reports like any other mutation — the paths it created and
